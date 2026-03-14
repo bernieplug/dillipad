@@ -67,7 +67,7 @@
             font-weight: bold;
             cursor: pointer;
             border-radius: 5px;
-            margin-top: 20px;
+            margin-top: 10px;
             font-family: 'Courier New', Courier, monospace;
             text-transform: uppercase;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
@@ -77,6 +77,29 @@
         }
         .btn:active {
             transform: translateY(2px);
+        }
+        #difficulty-selector {
+            display: flex;
+            gap: 15px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid #ff9933;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+        #difficulty-selector label {
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+        #difficulty-selector input[type="radio"] {
+            accent-color: #138808;
+            transform: scale(1.2);
+            cursor: pointer;
         }
         #stats {
             width: 90%;
@@ -91,7 +114,7 @@
             font-size: 14px;
             color: #aaa;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             padding: 0 10px;
         }
         #footer {
@@ -104,6 +127,7 @@
         @media (max-width: 600px) {
             #stats { font-size: 14px; }
             h1 { font-size: 24px; }
+            #difficulty-selector { flex-direction: column; gap: 10px; padding: 15px 30px; }
         }
     </style>
 </head>
@@ -122,6 +146,13 @@
             <h2 id="ui-title" style="font-size: 36px; color: #ff9933; margin:0; text-align: center;">DILLI PAD</h2>
             <p class="subtitle">Survive the chaos. Get to the apartment.<br>Arrow Keys or <b>Swipe</b> to move.</p>
             <p id="ui-msg" style="font-size: 20px; color: #fff; text-align: center;"></p>
+            
+            <div id="difficulty-selector">
+                <label><input type="radio" name="difficulty" value="0.6" checked> Easy</label>
+                <label><input type="radio" name="difficulty" value="1.0"> Medium</label>
+                <label><input type="radio" name="difficulty" value="1.5"> Hard</label>
+            </div>
+
             <button id="start-btn" class="btn">Start Crossing</button>
         </div>
     </div>
@@ -197,6 +228,7 @@
     let isGameOver = false;
     let isPlaying = false;
     let animationId = null;
+    let baseSpeedMultiplier = 0.6; // Gets overridden by difficulty selector
     
     let player = {};
     let lanes = [];
@@ -274,7 +306,7 @@
 
     function buildLevel() {
         lanes = [];
-        const speedMult = 1 + (level * 0.2);
+        const speedMult = baseSpeedMultiplier + (level * 0.15); 
 
         lanes.push(new Obstacle(100, 11*gridSize, 'vendor', 1 * speedMult, -1, 1));
         lanes.push(new Obstacle(400, 11*gridSize, 'vendor', 1 * speedMult, -1, 1));
@@ -566,6 +598,15 @@
         // Ensure AudioContext is resumed if it was suspended (browser policy)
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
+        }
+
+        // Get selected difficulty
+        const diffRadios = document.getElementsByName('difficulty');
+        for (let radio of diffRadios) {
+            if (radio.checked) {
+                baseSpeedMultiplier = parseFloat(radio.value);
+                break;
+            }
         }
         
         score = 0;
